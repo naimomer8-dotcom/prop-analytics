@@ -474,7 +474,8 @@ function saveCreds() {
 function initSettings() {
   document.getElementById('s-url').value  = S.url;
   document.getElementById('s-key').value  = S.key;
-  document.getElementById('s-calc').value = S.calcUrl;
+  document.getElementById('s-calc').value = S.calcUrl ||
+    'https://naimomer8-dotcom.github.io/prop-analytics/real-estate-calculator.html';
 }
 
 function saveSettings() {
