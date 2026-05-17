@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin | PropAnalytics™</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #070711; --bg2: #0d0d20; --bg3: #13132e;
+      --card: #0f0f22; --card2: #161630;
+      --orange: #f97316; --yellow: #eab308;
+      --grad: linear-gradient(135deg, #f97316, #eab308);
+      --white: #f0f0fa; --gray: #8888aa; --border: rgba(255,255,255,0.07);
+      --green: #22c55e; --red: #ef4444; --radius: 14px;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); font-family: 'Heebo', sans-serif; color: var(--white); min-height: 100vh; }
+
+    /* ── LOGIN ── */
+    #login { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .lcard {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 44px 36px; max-width: 400px; width: 100%;
+      text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    }
+    .lcard-logo { font-size: 22px; font-weight: 800; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 6px; }
+    .lcard-sub { font-size: 14px; color: var(--gray); margin-bottom: 28px; }
+    .lcard-link { font-size: 12px; color: var(--gray); margin-top: 14px; }
+    .lcard-link a { color: var(--orange); text-decoration: none; }
+
+    /* ── HEADER ── */
+    header {
+      background: rgba(7,7,17,0.95); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .h-logo { font-size: 16px; font-weight: 800; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .h-nav { display: flex; gap: 2px; }
+    .nt {
+      background: none; border: none; color: var(--gray);
+      font-family: 'Heebo', sans-serif; font-size: 14px; font-weight: 500;
+      padding: 7px 16px; border-radius: 8px; cursor: pointer; transition: all .2s;
+    }
+    .nt.on { background: rgba(249,115,22,.1); color: var(--orange); }
+    .nt:hover:not(.on) { background: rgba(255,255,255,.05); color: var(--white); }
+    .badge-num {
+      display: inline-block; background: rgba(249,115,22,.15); color: var(--orange);
+      border-radius: 100px; padding: 1px 7px; font-size: 11px; margin-right: 4px;
+    }
+    .btn-logout {
+      background: none; border: 1px solid var(--border); color: var(--gray);
+      font-family: 'Heebo', sans-serif; font-size: 13px; padding: 6px 14px;
+      border-radius: 8px; cursor: pointer; transition: all .2s;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── STATS ── */
+    .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; padding: 20px 28px; max-width: 1100px; margin: 0 auto; }
+    .stat { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+    .stat-l { font-size: 11px; color: var(--gray); font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
+    .stat-v { font-size: 28px; font-weight: 800; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    /* ── CONTENT ── */
+    .content { max-width: 1100px; margin: 0 auto; padding: 0 28px 60px; }
+    .tab { display: none; }
+    .tab.on { display: block; animation: fi .3s ease; }
+    @keyframes fi { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── CARD ── */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
+    .card-title { font-size: 15px; font-weight: 700; margin-bottom: 18px; }
+    .card-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+    .card-row .card-title { margin-bottom: 0; }
+
+    /* ── INPUTS ── */
+    .inp {
+      padding: 11px 14px; background: var(--card2); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--white); font-family: 'Heebo', sans-serif;
+      font-size: 14px; direction: rtl; transition: border-color .2s;
+    }
+    .inp:focus { outline: none; border-color: var(--orange); }
+    .inp::placeholder { color: var(--gray); }
+    .inp-full { width: 100%; display: block; }
+    .inp-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .inp-row .inp { flex: 1; }
+    .inp-label { font-size: 12px; color: var(--gray); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 7px; }
+
+    /* ── BUTTONS ── */
+    .btn { padding: 10px 20px; border-radius: 10px; font-family: 'Heebo', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; border: none; transition: all .15s; }
+    .btn-o { background: var(--grad); color: #000; box-shadow: 0 2px 12px rgba(249,115,22,.3); }
+    .btn-o:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(249,115,22,.45); }
+    .btn-line { background: none; border: 1px solid var(--border); color: var(--gray); }
+    .btn-line:hover { border-color: var(--orange); color: var(--orange); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+    .btn-del { background: rgba(239,68,68,.08); color: var(--red); border: 1px solid rgba(239,68,68,.2); }
+    .btn-del:hover { background: rgba(239,68,68,.18); }
+    .btn-full { width: 100%; padding: 14px; font-size: 16px; display: block; margin-bottom: 10px; }
+    .btn-wa-sm { background: linear-gradient(135deg,#25D366,#128C7E); color: white; font-size: 12px; padding: 5px 12px; border-radius: 100px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+
+    /* ── TABLE ── */
+    .tbl-wrap { overflow-x: auto; border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th { padding: 10px 14px; text-align: right; color: var(--gray); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    tbody td { padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,.035); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,.018); }
+    .td-ltr { direction: ltr; text-align: right; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
+    .tag-r { background: rgba(249,115,22,.1); color: var(--orange); }
+    .tag-c { background: rgba(234,179,8,.1); color: var(--yellow); }
+    .tag-v { background: rgba(34,197,94,.1); color: var(--green); }
+    .yield-hi { color: #22c55e; font-weight: 700; }
+    .yield-md { color: #eab308; font-weight: 700; }
+    .yield-lo { color: #ef4444; font-weight: 700; }
+
+    /* ── AGENT CARDS ── */
+    .agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px,1fr)); gap: 14px; }
+    .ac { background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .ac-av {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(249,115,22,.1); border: 1px solid rgba(249,115,22,.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; font-weight: 800; color: var(--orange); margin-bottom: 12px;
+    }
+    .ac-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .ac-phone { font-size: 13px; color: var(--gray); direction: ltr; margin-bottom: 6px; }
+    .ac-leads { font-size: 12px; color: rgba(136,136,170,.7); margin-bottom: 14px; }
+    .ac-btns { display: flex; gap: 8px; }
+
+    /* ── CODE BLOCK ── */
+    .code-block {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px; font-family: monospace; font-size: 12px; color: #a0a0c0;
+      overflow-x: auto; white-space: pre; max-height: 320px; overflow-y: auto;
+      line-height: 1.65;
+    }
+    .code-wrap { position: relative; margin-top: 10px; }
+    .copy-btn { position: absolute; top: 8px; left: 8px; }
+
+    /* ── SETUP STEPS ── */
+    .setup-step { display: flex; gap: 14px; margin-bottom: 22px; padding-bottom: 22px; border-bottom: 1px solid var(--border); }
+    .setup-step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .sn {
+      min-width: 30px; height: 30px; border-radius: 50%;
+      background: rgba(249,115,22,.1); border: 1px solid rgba(249,115,22,.25);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 13px; color: var(--orange);
+    }
+    .sb .st { font-weight: 700; margin-bottom: 5px; font-size: 14px; }
+    .sb .sd { font-size: 13px; color: var(--gray); line-height: 1.65; }
+    .sb .sd a { color: var(--orange); text-decoration: none; }
+    .sb .sd code { background: var(--bg); color: var(--orange); padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+
+    /* ── EMPTY / LOADING ── */
+    .empty { text-align: center; padding: 60px 20px; color: var(--gray); font-size: 14px; }
+    .empty-icon { font-size: 36px; margin-bottom: 12px; }
+    .spin-wrap { text-align: center; padding: 40px; color: var(--gray); }
+    .spin { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--orange); border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -4px; margin-left: 8px; }
+    @keyframes sp { to { transform: rotate(360deg); } }
+
+    /* ── FILTER BAR ── */
+    .fbar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #0f0f22; border: 1px solid rgba(34,197,94,.35); color: var(--green);
+      padding: 11px 24px; border-radius: 100px; font-size: 14px; font-weight: 600;
+      z-index: 9999; pointer-events: none; animation: tIn .3s ease;
+    }
+    @keyframes tIn { from { opacity:0; transform:translateX(-50%) translateY(8px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+
+    @media (max-width: 700px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+      .h-nav { display: none; }
+      header { padding: 0 16px; }
+      .content, .stats { padding-left: 16px; padding-right: 16px; }
+      .mobile-tabs { display: flex; gap: 4px; margin-bottom: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════ LOGIN ════ -->
+<div id="login">
+  <div class="lcard">
+    <div class="lcard-logo">PropAnalytics™</div>
+    <p class="lcard-sub">ממשק ניהול יועצים ולידים</p>
+    <input class="inp inp-full" type="password" id="lkey" placeholder="הזן מפתח גישה (Secret Key)"
+      style="margin-bottom:12px" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-o btn-full" onclick="doLogin()">כניסה לממשק הניהול</button>
+    <p class="lcard-link">לא הגדרת עדיין? <a href="#" onclick="setupMode()">מדריך הגדרה</a></p>
+  </div>
+</div>
+
+<!-- ════ ADMIN PANEL ════ -->
+<div id="admin" style="display:none">
+
+  <header>
+    <div class="h-logo">⚡ PropAnalytics Admin</div>
+    <nav class="h-nav">
+      <button class="nt on" id="nt-leads" onclick="showTab('leads')">
+        לידים <span class="badge-num" id="nb-leads"></span>
+      </button>
+      <button class="nt" id="nt-agents" onclick="showTab('agents')">
+        יועצים <span class="badge-num" id="nb-agents"></span>
+      </button>
+      <button class="nt" id="nt-setup" onclick="showTab('setup')">הגדרות</button>
+    </nav>
+    <button class="btn-logout" onclick="logout()">יציאה</button>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-l">סה"כ לידים</div><div class="stat-v" id="sv-total">—</div></div>
+    <div class="stat"><div class="stat-l">היום</div><div class="stat-v" id="sv-today">—</div></div>
+    <div class="stat"><div class="stat-l">יועצים פעילים</div><div class="stat-v" id="sv-agents">—</div></div>
+    <div class="stat"><div class="stat-l">ממוצע תשואה</div><div class="stat-v" id="sv-yield">—</div></div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── LEADS TAB ── -->
+    <div class="tab on" id="tab-leads">
+      <div class="card">
+        <div class="card-row">
+          <div class="card-title">📋 לידים נכנסים</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select class="inp btn-sm" id="f-agent" onchange="renderLeads()" style="padding:7px 12px">
+              <option value="">כל היועצים</option>
+            </select>
+            <button class="btn btn-line btn-sm" onclick="exportCSV()">📥 CSV</button>
+            <button class="btn btn-line btn-sm" onclick="loadAll()">🔄 רענן</button>
+          </div>
+        </div>
+        <div id="leads-out">
+          <div class="spin-wrap">טוען לידים<div class="spin"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AGENTS TAB ── -->
+    <div class="tab" id="tab-agents">
+      <div class="card">
+        <div class="card-title">➕ הוסף יועץ חדש</div>
+        <div class="inp-row">
+          <input class="inp" type="text" id="a-name" placeholder="שם מלא (לדוגמה: שי כהן)" style="flex:1.5">
+          <input class="inp" type="tel" id="a-phone" placeholder="טלפון ללא 0 מקדימה (972501234567)" dir="ltr" style="flex:2;text-align:right">
+        </div>
+        <button class="btn btn-o" onclick="addAgent()">הוסף יועץ</button>
+        <p style="font-size:12px;color:var(--gray);margin-top:8px">הטלפון ישמש לכפתור WhatsApp במחשבון עבור הלידים שלו</p>
+      </div>
+      <div class="card">
+        <div class="card-title">👥 יועצים פעילים</div>
+        <div id="agents-out">
+          <div class="spin-wrap">טוען יועצים<div class="spin"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETUP TAB ── -->
+    <div class="tab" id="tab-setup">
+      <div class="card">
+        <div class="card-title">⚙️ הגדרות חיבור</div>
+        <div style="margin-bottom:14px">
+          <label class="inp-label">Apps Script Web App URL</label>
+          <input class="inp inp-full" type="url" id="s-url" placeholder="https://script.google.com/macros/s/..." dir="ltr">
+        </div>
+        <div style="margin-bottom:14px">
+          <label class="inp-label">Secret Key — מפתח גישה</label>
+          <input class="inp inp-full" type="text" id="s-key" placeholder="הסיסמה שהגדרת בקוד" dir="ltr">
+        </div>
+        <div style="margin-bottom:20px">
+          <label class="inp-label">כתובת URL של המחשבון (ללא query string)</label>
+          <input class="inp inp-full" type="url" id="s-calc" placeholder="https://yoursite.com/real-estate-calculator.html" dir="ltr">
+        </div>
+        <button class="btn btn-o" onclick="saveSettings()">שמור הגדרות</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🚀 מדריך הגדרה — Google Apps Script</div>
+
+        <div class="setup-step">
+          <div class="sn">1</div>
+          <div class="sb">
+            <div class="st">צור Google Sheet חדש</div>
+            <div class="sd">פתח <a href="https://sheets.new" target="_blank">sheets.new</a> ותן שם כמו "PropAnalytics".</div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="sn">2</div>
+          <div class="sb">
+            <div class="st">פתח Apps Script</div>
+            <div class="sd">בגיליון: <strong>Extensions → Apps Script</strong>. מחק הכל והדבק את הקוד הבא:</div>
+            <div class="code-wrap">
+              <div class="code-block" id="as-code">טוען...</div>
+              <button class="btn btn-line btn-sm copy-btn" onclick="copyCode()">📋 העתק</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="sn">3</div>
+          <div class="sb">
+            <div class="st">שנה את ה-SECRET KEY</div>
+            <div class="sd">בשורה הראשונה בקוד שנה <code>'CHANGE_THIS_SECRET'</code> לסיסמה שלך. אותה סיסמה תזין למעלה ב-"Secret Key".</div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="sn">4</div>
+          <div class="sb">
+            <div class="st">פרוס כ-Web App</div>
+            <div class="sd">
+              לחץ <strong>Deploy → New deployment → Web app</strong>.<br>
+              • Execute as: <strong>Me</strong><br>
+              • Who has access: <strong>Anyone</strong><br>
+              לחץ Deploy, אשר הרשאות, והעתק את ה-URL.
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="sn">5</div>
+          <div class="sb">
+            <div class="st">הכנס את הפרטים למעלה</div>
+            <div class="sd">הדבק את ה-Web App URL, הזן את ה-Secret Key, והזן את ה-URL של המחשבון שהעלאת לאינטרנט. לחץ "שמור הגדרות".</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /admin -->
+
+<script>
+// ──────────────────────────────────────────
+//  APPS SCRIPT CODE (displayed in setup tab)
+// ──────────────────────────────────────────
+const AS_CODE = `// PropAnalytics — Google Apps Script Backend
+const SECRET = 'PropAdmin2025!'; // ← הסיסמה שלך — שמור אותה!
+const SS = SpreadsheetApp.getActiveSpreadsheet();
+
+function doGet(e) {
+  const p = e.parameter, cb = p.callback || 'cb';
+  try {
+    const k = p.key, a = p.action, r = dispatch(a, k, p);
+    return out(cb, r);
+  } catch(err) { return out(cb, {error: err.message}); }
+}
+
+function dispatch(a, k, p) {
+  if (a === 'lead')       return saveLead(p);
+  if (k !== SECRET)       return {error: 'Unauthorized'};
+  if (a === 'leads')      return getRows('Leads');
+  if (a === 'agents')     return getRows('Agents');
+  if (a === 'addAgent')   return addAgent(p);
+  if (a === 'delAgent')   return delAgent(p.id);
+  return {ok: true, v: '1.0'};
+}
+
+function out(cb, data) {
+  return ContentService
+    .createTextOutput(cb + '(' + JSON.stringify(data) + ')')
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+
+// Save incoming lead
+function saveLead(p) {
+  const sh = ensureSheet('Leads',
+    ['date','name','phone','email','city','deal','price','equity','extra',
+     'rent','yield','mortgage','cashflow','agentName','agentPhone']);
+  sh.appendRow([new Date().toISOString(),
+    p.name||'', p.phone||'', p.email||'', p.city||'', p.deal||'',
+    +p.price||0, +p.equity||0, +p.extra||0, +p.rent||0,
+    +p.yield||0, +p.mortgage||0, +p.cashflow||0,
+    p.agentName||'', p.agentPhone||'']);
+  return {ok: true};
+}
+
+// Get rows from sheet
+function getRows(name) {
+  const sh = SS.getSheetByName(name);
+  if (!sh || sh.getLastRow() <= 1) return [];
+  const rows = sh.getDataRange().getValues();
+  const h = rows[0];
+  return rows.slice(1).reverse()
+    .map(r => { const o = {}; h.forEach((k,i) => o[k] = r[i]); return o; });
+}
+
+// Add advisor
+function addAgent(p) {
+  const sh = ensureSheet('Agents', ['id','name','phone','added']);
+  const id = Date.now().toString(36);
+  sh.appendRow([id, p.name, p.phone, new Date().toISOString()]);
+  return {ok: true, id};
+}
+
+// Delete advisor
+function delAgent(id) {
+  const sh = SS.getSheetByName('Agents');
+  if (!sh) return {ok: true};
+  const rows = sh.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(id)) { sh.deleteRow(i + 1); return {ok:true}; }
+  }
+  return {ok: true};
+}
+
+// Ensure sheet exists with headers
+function ensureSheet(name, headers) {
+  let sh = SS.getSheetByName(name);
+  if (!sh) {
+    sh = SS.insertSheet(name);
+    sh.appendRow(headers);
+    sh.getRange(1,1,1,headers.length).setFontWeight('bold').setBackground('#f5f5f5');
+  }
+  return sh;
+}`;
+
+// ──────────────────────────────────────────
+//  STATE
+// ──────────────────────────────────────────
+let S = { key: '', url: '', calcUrl: '', leads: [], agents: [] };
+
+// ──────────────────────────────────────────
+//  BOOT
+// ──────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('as-code').textContent = AS_CODE;
+  const saved = JSON.parse(localStorage.getItem('pa_admin') || '{}');
+  if (saved.key) document.getElementById('lkey').value = saved.key;
+});
+
+// ──────────────────────────────────────────
+//  LOGIN
+// ──────────────────────────────────────────
+function doLogin() {
+  const key = document.getElementById('lkey').value.trim();
+  if (!key) { alert('הזן מפתח גישה'); return; }
+  const saved = JSON.parse(localStorage.getItem('pa_admin') || '{}');
+  S = { key, url: saved.url || '', calcUrl: saved.calcUrl || '', leads: [], agents: [] };
+  saveCreds();
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('admin').style.display = 'block';
+  initSettings();
+  loadAll();
+}
+
+function setupMode() {
+  S.key = '__setup__';
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('admin').style.display = 'block';
+  showTab('setup');
+}
+
+function logout() {
+  localStorage.removeItem('pa_admin');
+  location.reload();
+}
+
+function saveCreds() {
+  localStorage.setItem('pa_admin', JSON.stringify({ key: S.key, url: S.url, calcUrl: S.calcUrl }));
+}
+
+// ──────────────────────────────────────────
+//  SETTINGS
+// ──────────────────────────────────────────
+function initSettings() {
+  document.getElementById('s-url').value  = S.url;
+  document.getElementById('s-key').value  = S.key;
+  document.getElementById('s-calc').value = S.calcUrl;
+}
+
+function saveSettings() {
+  S.url     = document.getElementById('s-url').value.trim();
+  S.key     = document.getElementById('s-key').value.trim();
+  S.calcUrl = document.getElementById('s-calc').value.trim();
+  saveCreds();
+  toast('הגדרות נשמרו ✓');
+  loadAll();
+}
+
+// ──────────────────────────────────────────
+//  JSONP HELPER
+// ──────────────────────────────────────────
+function jsonp(url, cb) {
+  const fn = '_pa_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  window[fn] = d => { try { delete window[fn]; } catch(e) {} cb(d); };
+  const s = document.createElement('script');
+  s.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + fn;
+  s.onerror = () => { try { delete window[fn]; } catch(e) {} cb({ error: 'שגיאת חיבור לשרת' }); };
+  document.head.appendChild(s);
+  setTimeout(() => { if (window[fn]) { try { delete window[fn]; } catch(e) {} cb({ error: 'Timeout — בדוק את ה-URL' }); } }, 12000);
+}
+
+function api(params, cb) {
+  if (!S.url) { cb({ error: 'no_url' }); return; }
+  const p = new URLSearchParams({ ...params, key: S.key });
+  jsonp(S.url + '?' + p.toString(), cb);
+}
+
+// ──────────────────────────────────────────
+//  LOAD DATA
+// ──────────────────────────────────────────
+function loadAll() {
+  if (!S.url) {
+    document.getElementById('leads-out').innerHTML  = '<div class="empty"><div class="empty-icon">⚙️</div>עבור ל<strong>הגדרות</strong> וחבר את Google Apps Script</div>';
+    document.getElementById('agents-out').innerHTML = '<div class="empty"><div class="empty-icon">⚙️</div>חבר Apps Script תחילה</div>';
+    return;
+  }
+  loadLeads();
+  loadAgents();
+}
+
+function loadLeads() {
+  document.getElementById('leads-out').innerHTML = '<div class="spin-wrap">טוען לידים<div class="spin"></div></div>';
+  api({ action: 'leads' }, data => {
+    if (data.error) {
+      document.getElementById('leads-out').innerHTML = `<div class="empty"><div class="empty-icon">❌</div>${data.error}</div>`;
+      return;
+    }
+    S.leads = Array.isArray(data) ? data : [];
+    renderLeads();
+    updateStats();
+    populateFilter();
+  });
+}
+
+function loadAgents() {
+  document.getElementById('agents-out').innerHTML = '<div class="spin-wrap">טוען יועצים<div class="spin"></div></div>';
+  api({ action: 'agents' }, data => {
+    if (data.error) {
+      document.getElementById('agents-out').innerHTML = `<div class="empty"><div class="empty-icon">❌</div>${data.error}</div>`;
+      return;
+    }
+    S.agents = Array.isArray(data) ? data : [];
+    renderAgents();
+    updateStats();
+  });
+}
+
+// ──────────────────────────────────────────
+//  RENDER LEADS
+// ──────────────────────────────────────────
+function renderLeads() {
+  const af = document.getElementById('f-agent')?.value || '';
+  const leads = af ? S.leads.filter(l => (l.agentName||'') === af) : S.leads;
+
+  document.getElementById('nb-leads').textContent = leads.length || '';
+
+  if (!leads.length) {
+    document.getElementById('leads-out').innerHTML = '<div class="empty"><div class="empty-icon">📭</div>אין לידים עדיין</div>';
+    return;
+  }
+
+  const dealMap = { residential: 'מגורים', commercial: 'מסחרי', renovation: 'השבחה' };
+  const dealCls = { residential: 'tag-r', commercial: 'tag-c', renovation: 'tag-v' };
+
+  const rows = leads.map(l => {
+    const y   = parseFloat(l.yield) || 0;
+    const yCl = y >= 5 ? 'yield-hi' : y >= 3 ? 'yield-md' : 'yield-lo';
+    const cf  = Math.round(Number(l.cashflow) || 0);
+    const dt  = l.date ? new Date(l.date).toLocaleDateString('he-IL', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' }) : '—';
+    const dealHeb = dealMap[l.deal] || l.deal || '—';
+    const dealC   = dealCls[l.deal] || 'tag-r';
+    const waPhone = (l.phone || '').replace(/\D/g,'');
+    return `<tr>
+      <td style="font-size:12px;color:var(--gray);white-space:nowrap">${dt}</td>
+      <td style="font-weight:600">${l.name||'—'}</td>
+      <td class="td-ltr">${l.phone||'—'}</td>
+      <td>${l.city||'—'}</td>
+      <td><span class="tag ${dealC}">${dealHeb}</span></td>
+      <td style="font-weight:600">₪${fmt(l.price)}</td>
+      <td class="${yCl}">${y.toFixed(1)}%</td>
+      <td style="color:${cf>=0?'#22c55e':'#ef4444'};font-weight:700">${cf>=0?'+':''}₪${fmt(cf)}</td>
+      <td style="color:var(--orange)">${l.agentName||'—'}</td>
+      <td>${waPhone ? `<a href="https://wa.me/${waPhone}" target="_blank" class="btn-wa-sm">📞 WhatsApp</a>` : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('leads-out').innerHTML = `
+    <div class="tbl-wrap"><table>
+      <thead><tr>
+        <th>תאריך</th><th>שם</th><th>טלפון</th><th>עיר</th>
+        <th>סוג</th><th>מחיר</th><th>תשואה</th><th>תזרים</th><th>יועץ</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+
+function populateFilter() {
+  const sel = document.getElementById('f-agent');
+  if (!sel) return;
+  const agents = [...new Set(S.leads.map(l => l.agentName).filter(Boolean))];
+  sel.innerHTML = '<option value="">כל היועצים</option>' +
+    agents.map(a => `<option value="${a}">${a}</option>`).join('');
+}
+
+// ──────────────────────────────────────────
+//  RENDER AGENTS
+// ──────────────────────────────────────────
+function renderAgents() {
+  document.getElementById('nb-agents').textContent = S.agents.length || '';
+  const el = document.getElementById('agents-out');
+
+  if (!S.agents.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">👤</div>הוסף יועץ ראשון מהטופס למעלה</div>';
+    return;
+  }
+
+  const base = S.calcUrl;
+  const cards = S.agents.map(a => {
+    const id    = a.id || '';
+    const name  = a.name || '';
+    const phone = a.phone || '';
+    const init  = name ? name.charAt(0) : '?';
+    const cnt   = S.leads.filter(l => l.agentName === name).length;
+    const link  = base ? `${base}?an=${encodeURIComponent(name)}&ap=${encodeURIComponent(phone)}` : '';
+    return `<div class="ac">
+      <div class="ac-av">${init}</div>
+      <div class="ac-name">${name}</div>
+      <div class="ac-phone">${phone}</div>
+      <div class="ac-leads">${cnt} לידים נכנסו</div>
+      <div class="ac-btns">
+        <button class="btn btn-line btn-sm" onclick="copyLink('${encodeURIComponent(link)}','${name}')">📋 קישור</button>
+        <button class="btn btn-del btn-sm" onclick="delAgent('${id}','${name}')">מחק</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `<div class="agents-grid">${cards}</div>`;
+}
+
+// ──────────────────────────────────────────
+//  AGENT ACTIONS
+// ──────────────────────────────────────────
+function addAgent() {
+  const name  = document.getElementById('a-name').value.trim();
+  const phone = document.getElementById('a-phone').value.trim().replace(/\D/g,'');
+  if (!name || !phone) { alert('הזן שם וטלפון'); return; }
+  if (!S.url) { alert('חבר Apps Script תחילה בהגדרות'); return; }
+  api({ action: 'addAgent', name, phone }, data => {
+    if (data.error) { alert('שגיאה: ' + data.error); return; }
+    document.getElementById('a-name').value = '';
+    document.getElementById('a-phone').value = '';
+    toast('יועץ נוסף ✓');
+    loadAgents();
+  });
+}
+
+function delAgent(id, name) {
+  if (!confirm(`למחוק את ${name}?`)) return;
+  api({ action: 'delAgent', id }, () => { toast('יועץ נמחק'); loadAgents(); });
+}
+
+function copyLink(enc, name) {
+  const link = decodeURIComponent(enc);
+  if (!link) { alert('הגדר URL של המחשבון בהגדרות תחילה'); return; }
+  navigator.clipboard.writeText(link)
+    .then(() => toast(`קישור של ${name} הועתק ✓`))
+    .catch(() => prompt('העתק את הקישור:', link));
+}
+
+// ──────────────────────────────────────────
+//  STATS
+// ──────────────────────────────────────────
+function updateStats() {
+  document.getElementById('sv-total').textContent  = S.leads.length;
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('sv-today').textContent  = S.leads.filter(l => (l.date||'').startsWith(today)).length;
+  document.getElementById('sv-agents').textContent = S.agents.length;
+  const ys = S.leads.map(l => parseFloat(l.yield)||0).filter(y=>y>0);
+  document.getElementById('sv-yield').textContent  = ys.length ? (ys.reduce((a,b)=>a+b,0)/ys.length).toFixed(1)+'%' : '—';
+}
+
+// ──────────────────────────────────────────
+//  CSV EXPORT
+// ──────────────────────────────────────────
+function exportCSV() {
+  if (!S.leads.length) { alert('אין לידים לייצוא'); return; }
+  const h = ['date','name','phone','email','city','deal','price','equity','extra','rent','yield','mortgage','cashflow','agentName','agentPhone'];
+  const hHeb = ['תאריך','שם','טלפון','מייל','עיר','סוג','מחיר','הון עצמי','עלויות','שכירות','תשואה%','משכנתא','תזרים','יועץ','טל יועץ'];
+  const rows = S.leads.map(l => h.map(k => `"${(l[k]||'').toString().replace(/"/g,'""')}"`).join(','));
+  const csv = '﻿' + hHeb.join(',') + '\n' + rows.join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'leads-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+// ──────────────────────────────────────────
+//  TAB NAV
+// ──────────────────────────────────────────
+function showTab(t) {
+  ['leads','agents','setup'].forEach(id => {
+    document.getElementById('tab-'+id).classList.toggle('on', id===t);
+    document.getElementById('nt-'+id)?.classList.toggle('on', id===t);
+  });
+}
+
+// ──────────────────────────────────────────
+//  UTILS
+// ──────────────────────────────────────────
+const fmt = n => Math.round(Number(n)||0).toLocaleString('he-IL');
+
+function toast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(AS_CODE).then(() => toast('קוד הועתק ✓'));
+}
+</script>
+</body>
+</html>
