@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מחשבון כדאיות נדל"ן | PropAnalytics™</title>
+  <meta name="description" content="מחשבון מקצועי לניתוח כדאיות עסקאות נדל"ן — תשואה, מינוף ותזרים מזומנים">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #070711;
+      --bg2:      #0d0d20;
+      --bg3:      #13132e;
+      --card:     #0f0f22;
+      --card2:    #161630;
+      --orange:   #f97316;
+      --yellow:   #eab308;
+      --grad:     linear-gradient(135deg, #f97316 0%, #eab308 100%);
+      --white:    #f0f0fa;
+      --gray:     #8888aa;
+      --border:   rgba(255,255,255,0.07);
+      --radius:   16px;
+      --shadow:   0 4px 32px rgba(0,0,0,0.5);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Heebo', sans-serif;
+      color: var(--white);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── PROGRESS ── */
+    .prog-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7,7,17,0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+    }
+    .prog-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .logo {
+      font-size: 17px;
+      font-weight: 800;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 0.4px;
+    }
+    .prog-label {
+      font-size: 12px;
+      color: var(--gray);
+      font-weight: 500;
+    }
+    .prog-track {
+      height: 4px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .prog-fill {
+      height: 100%;
+      background: var(--grad);
+      border-radius: 100px;
+      transition: width 0.6s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 0 10px rgba(249,115,22,0.5);
+    }
+
+    /* ── MAIN ── */
+    .main {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 36px 20px 80px;
+    }
+
+    /* ── STEP ── */
+    .step { display: none; }
+    .step.active {
+      display: block;
+      animation: fadeUp 0.45s ease forwards;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── STEP HEADER ── */
+    .step-hd { text-align: center; margin-bottom: 32px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(249,115,22,0.1);
+      border: 1px solid rgba(249,115,22,0.25);
+      color: var(--orange);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 14px;
+      letter-spacing: 0.3px;
+    }
+    .step-title {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+    .step-sub {
+      font-size: 15px;
+      color: var(--gray);
+      line-height: 1.65;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+    .field { margin-bottom: 26px; }
+    .field:last-child { margin-bottom: 0; }
+    .flabel {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+    }
+
+    /* ── SELECT ── */
+    select.inp {
+      width: 100%;
+      padding: 13px 16px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--white);
+      font-family: 'Heebo', sans-serif;
+      font-size: 15px;
+      direction: rtl;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: left 14px center;
+      transition: border-color 0.2s;
+    }
+    select.inp:focus { outline: none; border-color: var(--orange); }
+
+    /* ── RADIO CARDS ── */
+    .rg {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 10px;
+    }
+    .ro {
+      background: var(--card2);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+    .ro.sel {
+      border-color: var(--orange);
+      background: rgba(249,115,22,0.07);
+      box-shadow: 0 0 18px rgba(249,115,22,0.15);
+    }
+    .ro-icon { font-size: 26px; margin-bottom: 8px; }
+    .ro-lbl {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray);
+      transition: color 0.2s;
+    }
+    .ro.sel .ro-lbl { color: var(--orange); }
+
+    /* ── SLIDER ── */
+    .sval {
+      font-size: 28px;
+      font-weight: 800;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block;
+      margin-bottom: 12px;
+    }
+    input[type=range] {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 100px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--grad);
+      border: 3px solid var(--bg);
+      box-shadow: 0 0 10px rgba(249,115,22,0.6);
+      margin-top: -8px;
+      transition: transform 0.15s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    input[type=range]::-moz-range-track {
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 100px;
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--orange);
+      border: 3px solid var(--bg);
+    }
+    .slbls {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--gray);
+      margin-top: 6px;
+    }
+
+    /* ── NUMBER INPUT ── */
+    input.num {
+      width: 100%;
+      padding: 13px 16px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--white);
+      font-family: 'Heebo', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      direction: rtl;
+      text-align: right;
+      transition: border-color 0.2s;
+    }
+    input.num:focus { outline: none; border-color: var(--orange); }
+    input.num::placeholder { color: var(--gray); font-weight: 400; }
+
+    /* ── BUTTONS ── */
+    .btn-p {
+      width: 100%;
+      padding: 17px 24px;
+      background: var(--grad);
+      border: none;
+      border-radius: 14px;
+      color: #000;
+      font-family: 'Heebo', sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 24px rgba(249,115,22,0.35);
+      margin-bottom: 10px;
+    }
+    .btn-p:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(249,115,22,0.5);
+    }
+    .btn-p:active { transform: translateY(0); }
+
+    .btn-b {
+      width: 100%;
+      padding: 11px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--gray);
+      font-family: 'Heebo', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-b:hover { border-color: var(--orange); color: var(--orange); }
+
+    /* ── LOADING ── */
+    #sload {
+      text-align: center;
+      padding: 5rem 1rem;
+    }
+    .spinner {
+      width: 64px;
+      height: 64px;
+      border: 3px solid rgba(255,255,255,0.05);
+      border-top-color: var(--orange);
+      border-right-color: var(--yellow);
+      border-radius: 50%;
+      animation: spin 0.85s linear infinite;
+      margin: 0 auto 28px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .ldots { display: flex; justify-content: center; gap: 6px; margin: 14px 0; }
+    .ldot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--orange);
+      animation: bop 1.2s ease-in-out infinite;
+    }
+    .ldot:nth-child(2) { animation-delay: .2s; }
+    .ldot:nth-child(3) { animation-delay: .4s; }
+    @keyframes bop {
+      0%,80%,100% { opacity:.25; transform:scale(.7); }
+      40% { opacity:1; transform:scale(1.15); }
+    }
+    .ltxt {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      transition: opacity 0.3s;
+    }
+    .lsub { font-size: 14px; color: var(--gray); }
+
+    /* ── LEAD GATE ── */
+    .gate-card {
+      background: var(--card);
+      border: 1px solid rgba(249,115,22,0.2);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      box-shadow: 0 0 60px rgba(249,115,22,0.07), var(--shadow);
+      margin-bottom: 16px;
+    }
+    .gate-icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(249,115,22,0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      margin: 0 auto 22px;
+      border: 1px solid rgba(249,115,22,0.25);
+    }
+    .form-inp {
+      width: 100%;
+      padding: 13px 16px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--white);
+      font-family: 'Heebo', sans-serif;
+      font-size: 15px;
+      direction: rtl;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .form-inp:focus { outline: none; border-color: var(--orange); }
+    .form-inp::placeholder { color: var(--gray); }
+    .priv {
+      font-size: 12px;
+      color: var(--gray);
+      text-align: center;
+      margin-top: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── RESULTS ── */
+    .rbanner {
+      background: linear-gradient(135deg, rgba(249,115,22,0.08), rgba(234,179,8,0.08));
+      border: 1px solid rgba(249,115,22,0.2);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: var(--gray);
+      text-align: center;
+      line-height: 1.6;
+    }
+    .mg {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .mc {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 14px;
+      text-align: center;
+      transition: transform 0.2s;
+      box-shadow: var(--shadow);
+    }
+    .mc:hover { transform: translateY(-3px); }
+    .mc.hl { border-color: rgba(249,115,22,0.4); }
+    .mc.hl::before {
+      content: '';
+      display: block;
+      height: 3px;
+      background: var(--grad);
+      margin: -20px -14px 14px;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .m-icon { font-size: 22px; margin-bottom: 10px; }
+    .m-lbl {
+      font-size: 11px;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .m-val {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--white);
+    }
+    .m-val.o {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .m-unit { font-size: 12px; color: var(--gray); margin-top: 4px; }
+
+    /* ── WHATSAPP ── */
+    .btn-wa {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 18px 24px;
+      background: linear-gradient(135deg, #25D366, #128C7E);
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      font-family: 'Heebo', sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 24px rgba(37,211,102,0.3);
+      margin-bottom: 10px;
+    }
+    .btn-wa:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(37,211,102,0.45);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 12px;
+      color: rgba(136,136,170,0.5);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      .step-title { font-size: 24px; }
+      .m-val { font-size: 18px; }
+      .rg { gap: 8px; }
+      .ro { padding: 12px 6px; }
+      .ro-icon { font-size: 22px; }
+      .main { padding: 24px 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PROGRESS BAR -->
+  <div class="prog-bar">
+    <div class="prog-row">
+      <span class="logo">PropAnalytics™</span>
+      <span class="prog-label" id="ptxt">שלב 1 מתוך 4</span>
+    </div>
+    <div class="prog-track">
+      <div class="prog-fill" id="prog" style="width:20%"></div>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <!-- ══ STEP 1: Property Details ══ -->
+    <div class="step active" id="s1">
+      <div class="step-hd">
+        <div class="badge">📍 פרטי הנכס</div>
+        <h1 class="step-title">איפה הנכס<br>ומה סוג העסקה?</h1>
+        <p class="step-sub">נתחיל עם הבסיס — מיקום, סוג, ומחיר הרכישה</p>
+      </div>
+
+      <div class="card">
+        <div class="field">
+          <span class="flabel">🏙 עיר / מיקום הנכס</span>
+          <select class="inp" id="city">
+            <option value="">בחר עיר...</option>
+            <option>תל אביב-יפו</option>
+            <option>ירושלים</option>
+            <option>חיפה</option>
+            <option>ראשון לציון</option>
+            <option>פתח תקווה</option>
+            <option>נתניה</option>
+            <option>אשדוד</option>
+            <option>באר שבע</option>
+            <option>בני ברק</option>
+            <option>רמת גן</option>
+            <option>גבעתיים</option>
+            <option>הרצליה</option>
+            <option>רעננה</option>
+            <option>כפר סבא</option>
+            <option>מודיעין-מכבים-רעות</option>
+            <option>אשקלון</option>
+            <option>חולון</option>
+            <option>בת ים</option>
+            <option>רחובות</option>
+            <option>נס ציונה</option>
+            <option>אחר</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <span class="flabel">🏢 סוג העסקה</span>
+          <div class="rg" id="dt">
+            <div class="ro sel" data-v="residential" onclick="selDeal(this)">
+              <div class="ro-icon">🏠</div>
+              <div class="ro-lbl">דירת מגורים</div>
+            </div>
+            <div class="ro" data-v="commercial" onclick="selDeal(this)">
+              <div class="ro-icon">🏬</div>
+              <div class="ro-lbl">מסחרי</div>
+            </div>
+            <div class="ro" data-v="renovation" onclick="selDeal(this)">
+              <div class="ro-icon">🔨</div>
+              <div class="ro-lbl">השבחה</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="flabel">💰 מחיר רכישה</span>
+          <span class="sval" id="pd">₪ 1,500,000</span>
+          <input type="range" id="psl" min="500000" max="5000000" step="50000" value="1500000"
+            oninput="upd('pd','₪ '+fmt(this.value))">
+          <div class="slbls"><span>₪500K</span><span>₪5M</span></div>
+        </div>
+      </div>
+
+      <button class="btn-p" onclick="toS2()">המשך לשלב הבא ←</button>
+    </div>
+
+    <!-- ══ STEP 2: Finance ══ -->
+    <div class="step" id="s2">
+      <div class="step-hd">
+        <div class="badge">💼 מימון ותשואה</div>
+        <h1 class="step-title">כמה הון עצמי<br>ומה השכירות?</h1>
+        <p class="step-sub">נחשב את מבנה המינוף ותזרים המזומנים הצפוי</p>
+      </div>
+
+      <div class="card">
+        <div class="field">
+          <span class="flabel">🏦 הון עצמי זמין</span>
+          <span class="sval" id="ed">₪ 400,000</span>
+          <input type="range" id="esl" min="100000" max="3000000" step="25000" value="400000"
+            oninput="upd('ed','₪ '+fmt(this.value))">
+          <div class="slbls"><span>₪100K</span><span>₪3M</span></div>
+        </div>
+
+        <div class="field">
+          <span class="flabel">🔧 עלויות נלוות + שיפוץ (₪)</span>
+          <input type="number" class="num" id="ec" value="80000" placeholder="לדוגמה: 80000">
+        </div>
+
+        <div class="field">
+          <span class="flabel">📅 שכירות חודשית צפויה</span>
+          <span class="sval" id="rd">₪ 5,500 / חודש</span>
+          <input type="range" id="rsl" min="1000" max="30000" step="250" value="5500"
+            oninput="upd('rd','₪ '+fmt(this.value)+' / חודש')">
+          <div class="slbls"><span>₪1,000</span><span>₪30,000</span></div>
+        </div>
+      </div>
+
+      <button class="btn-p" onclick="startLoad()">🔍 חשב את הכדאיות שלי</button>
+      <button class="btn-b" onclick="show('s1',20,'שלב 1 מתוך 4')">← חזור</button>
+    </div>
+
+    <!-- ══ LOADING ══ -->
+    <div class="step" id="sload">
+      <div class="spinner"></div>
+      <p class="ltxt" id="ltxt">מחשב תשואה...</p>
+      <div class="ldots">
+        <div class="ldot"></div>
+        <div class="ldot"></div>
+        <div class="ldot"></div>
+      </div>
+      <p class="lsub">מנתח את הנתונים שלך מול מאגר עסקאות נדל"ן</p>
+    </div>
+
+    <!-- ══ LEAD GATE (Step 3) ══ -->
+    <div class="step" id="sgate">
+      <div class="step-hd">
+        <div class="badge">🔐 כמעט שם!</div>
+        <h1 class="step-title">הניתוח מוכן<br>עבורך</h1>
+        <p class="step-sub">השאר פרטים כדי לפתוח את דוח הכדאיות המלא</p>
+      </div>
+
+      <div class="gate-card">
+        <div class="gate-icon">📊</div>
+        <input class="form-inp" type="text" id="ln" placeholder="שם מלא" autocomplete="name">
+        <input class="form-inp" type="tel" id="lp" placeholder="טלפון נייד" autocomplete="tel" dir="ltr" style="text-align:right">
+        <input class="form-inp" type="email" id="le" placeholder="כתובת מייל" autocomplete="email" dir="ltr" style="text-align:right">
+        <button class="btn-p" onclick="submitLead()" style="margin-top:6px">🚀 פתח את דוח הכדאיות שלי</button>
+        <p class="priv">🔒 הפרטים שלך שמורים ומאובטחים. לא נעביר לצד שלישי.</p>
+      </div>
+    </div>
+
+    <!-- ══ RESULTS (Step 4) ══ -->
+    <div class="step" id="sres">
+      <div class="step-hd">
+        <div class="badge">✅ דוח הכדאיות</div>
+        <h1 class="step-title">ניתוח<br>העסקה שלך</h1>
+      </div>
+
+      <div class="rbanner" id="rban"></div>
+
+      <div class="mg">
+        <div class="mc">
+          <div class="m-icon">💰</div>
+          <div class="m-lbl">סך השקעה כוללת</div>
+          <div class="m-val" id="rt">—</div>
+          <div class="m-unit">₪</div>
+        </div>
+        <div class="mc">
+          <div class="m-icon">🏦</div>
+          <div class="m-lbl">משכנתא נדרשת</div>
+          <div class="m-val" id="rm">—</div>
+          <div class="m-unit">₪</div>
+        </div>
+        <div class="mc hl">
+          <div class="m-icon">📈</div>
+          <div class="m-lbl">תשואה ברוטו</div>
+          <div class="m-val o" id="ry">—</div>
+          <div class="m-unit">% שנתי</div>
+        </div>
+        <div class="mc hl">
+          <div class="m-icon">💵</div>
+          <div class="m-lbl">תזרים חודשי נטו</div>
+          <div class="m-val o" id="rc">—</div>
+          <div class="m-unit">₪ / חודש</div>
+        </div>
+      </div>
+
+      <a id="wabtn" href="#" target="_blank" rel="noopener" class="btn-wa">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        תיאום שיחה עם יועץ נדל"ן עכשיו
+      </a>
+      <button class="btn-b" onclick="restart()">← חשב עסקה חדשה</button>
+    </div>
+
+  </main>
+
+  <footer>PropAnalytics™ &nbsp;|&nbsp; כלי לניתוח ראשוני בלבד — אינו מהווה ייעוץ פיננסי</footer>
+
+  <script>
+    let D = {};
+    const fmt = n => Math.round(n).toLocaleString('he-IL');
+    const $ = id => document.getElementById(id);
+    const upd = (id, v) => $(id).textContent = v;
+
+    // ── קריאת פרמטרי יועץ מה-URL (מוגדר ע"י מנהל) ──
+    const _qp = new URLSearchParams(location.search);
+    const AGENT_NAME  = (_qp.get('an') || '').trim();
+    const AGENT_PHONE = (_qp.get('ap') || '').replace(/\D/g, '');
+
+    // ── קריאת Apps Script URL מה-localStorage (אם אדמין ומחשבון על אותו דומיין) ──
+    function _scriptUrl() {
+      try { return JSON.parse(localStorage.getItem('pa_admin') || '{}').url || ''; } catch(e) { return ''; }
+    }
+
+    // ── הצג שם יועץ אם קיים ──
+    if (AGENT_NAME) {
+      document.addEventListener('DOMContentLoaded', () => {
+        const logo = document.querySelector('.logo');
+        if (logo) logo.textContent = 'PropAnalytics™  |  ' + AGENT_NAME;
+      });
+    }
+
+    function show(id, pct, label) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      $(id).classList.add('active');
+      $('prog').style.width = pct + '%';
+      $('ptxt').textContent = label;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function selDeal(el) {
+      document.querySelectorAll('#dt .ro').forEach(o => o.classList.remove('sel'));
+      el.classList.add('sel');
+    }
+
+    function toS2() {
+      const city = $('city').value;
+      if (!city) { alert('אנא בחר עיר'); return; }
+      D.city = city;
+      D.deal = document.querySelector('#dt .ro.sel').dataset.v;
+      D.price = parseInt($('psl').value);
+      show('s2', 45, 'שלב 2 מתוך 4');
+    }
+
+    const ltxts = [
+      'מחשב תשואה...',
+      'מנתח מינוף...',
+      'בודק כדאיות...',
+      'מכין דוח השקעה...',
+      'מסנן סיכונים...'
+    ];
+
+    function startLoad() {
+      D.equity = parseInt($('esl').value);
+      D.extra  = parseInt($('ec').value) || 0;
+      D.rent   = parseInt($('rsl').value);
+      show('sload', 68, 'מעבד...');
+      let i = 0;
+      const iv = setInterval(() => {
+        i = (i + 1) % ltxts.length;
+        $('ltxt').textContent = ltxts[i];
+      }, 700);
+      setTimeout(() => { clearInterval(iv); show('sgate', 82, 'שלב 3 מתוך 4'); }, 3000);
+    }
+
+    function submitLead() {
+      const name  = $('ln').value.trim();
+      const phone = $('lp').value.trim();
+      if (!name || !phone) { alert('אנא מלא שם וטלפון'); return; }
+      D.name  = name;
+      D.phone = phone;
+      D.email = $('le').value.trim();
+      calcRes();
+      sendLead();   // ← שולח ל-Google Sheets אוטומטית
+      show('sres', 100, 'הושלם ✓');
+    }
+
+    function calcRes() {
+      const { price, equity, extra, rent, city, deal } = D;
+      const total = price + extra;
+      const mort  = Math.max(0, price - equity);
+      const yld   = ((rent * 12) / total * 100).toFixed(2);
+      const ncf   = Math.round(rent * 0.9 - mort * 0.0055);
+
+      upd('rt', fmt(total));
+      upd('rm', fmt(mort));
+      upd('ry', yld + '%');
+      upd('rc', (ncf >= 0 ? '+' : '') + fmt(ncf));
+
+      const dm  = { residential:'דירת מגורים', commercial:'מסחרי', renovation:'השבחה' };
+      const yn  = parseFloat(yld);
+      const q   = yn >= 5 ? '✅ תשואה אטרקטיבית'
+                : yn >= 3 ? '⚠️ תשואה סבירה'
+                : '🔴 תשואה נמוכה — כדאי לבחון מחדש';
+
+      $('rban').innerHTML = `
+        <strong style="color:#f0f0fa">${city} | ${dm[deal]}</strong><br>
+        ${q} &nbsp;(${yld}%)&nbsp; | &nbsp;תזרים חודשי: ${ncf >= 0 ? '💚 חיובי' : '🔴 שלילי'} (₪${fmt(ncf)})
+      `;
+
+      const msg = encodeURIComponent(
+        `שלום${AGENT_NAME ? ' ' + AGENT_NAME : ''}!\n` +
+        `ניתחתי עסקת נדל"ן דרך PropAnalytics:\n` +
+        `📍 עיר: ${city}\n🏠 סוג: ${dm[deal]}\n` +
+        `💰 מחיר: ₪${fmt(price)}\n📈 תשואה: ${yld}%\n` +
+        `💵 תזרים נטו: ₪${fmt(ncf)}/חודש\n\nאשמח לתאם שיחת ייעוץ!`
+      );
+
+      // ← משתמש בטלפון היועץ אם הגיע מקישור יועץ, אחרת ברירת מחדל
+      const waPhone = AGENT_PHONE || '972552423781';
+      $('wabtn').href = `https://wa.me/${waPhone}?text=${msg}`;
+
+      // עדכון טקסט כפתור WhatsApp לפי שם היועץ
+      const waBtn = $('wabtn');
+      if (AGENT_NAME) {
+        waBtn.querySelector('span') ?
+          waBtn.querySelector('span').textContent = `תיאום שיחה עם ${AGENT_NAME}` :
+          waBtn.childNodes[waBtn.childNodes.length - 1].textContent = `\n        תיאום שיחה עם ${AGENT_NAME}`;
+      }
+    }
+
+    function restart() {
+      D = {};
+      $('city').value = '';
+      document.querySelector('#dt .ro[data-v="residential"]').click();
+      $('psl').value = 1500000; upd('pd', '₪ 1,500,000');
+      $('esl').value = 400000;  upd('ed', '₪ 400,000');
+      $('rsl').value = 5500;    upd('rd', '₪ 5,500 / חודש');
+      $('ec').value  = 80000;
+      $('ln').value  = '';
+      $('lp').value  = '';
+      $('le').value  = '';
+      show('s1', 20, 'שלב 1 מתוך 4');
+    }
+
+    // ── שליחת ליד ל-Google Sheets דרך Apps Script (אוטומטי) ──
+    function sendLead() {
+      const sUrl = _scriptUrl();
+      if (!sUrl) return; // אין URL — לא שולח
+      const { price, equity, extra, rent, city, deal, name, phone, email } = D;
+      const total = price + extra;
+      const mort  = Math.max(0, price - equity);
+      const yld   = ((rent * 12) / total * 100).toFixed(2);
+      const ncf   = Math.round(rent * 0.9 - mort * 0.0055);
+      const params = new URLSearchParams({
+        action: 'lead', name, phone, email: email || '',
+        city, deal, price, equity, extra, rent,
+        yield: yld, mortgage: mort, cashflow: ncf,
+        agentName: AGENT_NAME, agentPhone: AGENT_PHONE
+      });
+      // Fire-and-forget — שולח ואין צורך בתגובה
+      const s = document.createElement('script');
+      s.src = sUrl + '?' + params.toString() + '&callback=_paok';
+      window._paok = () => {};
+      document.head.appendChild(s);
+    }
+  </script>
+</body>
+</html>
